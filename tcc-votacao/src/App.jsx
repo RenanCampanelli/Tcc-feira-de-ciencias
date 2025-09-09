@@ -36,16 +36,6 @@ function App() {
     }
   };
 
-  const resetarVotacao = () => {
-    if (window.confirm("Tem certeza que deseja reiniciar toda a votação?")) {
-      setEnquete({
-        ...enquete,
-        votos: [0, 0, 0, 0],
-        opcaoSelecionada: -1
-      });
-    }
-  };
-
   const totalVotos = enquete.votos.reduce((total, n) => total + n, 0);
 
   return (
@@ -61,23 +51,17 @@ function App() {
           return (
             <div
               key={i}
-              className={`opcao ${enquete.opcaoSelecionada === i ? 'selecionada' : ''}`}
+              className={'opcao ' + (enquete.opcaoSelecionada === i ? 'selecionada' : '')}
               onClick={() => selecionarOpcao(i)}
             >
               <span>{opcao}</span>
-              <div className="barra-de-porcentagem" style={{ width: `${percentual}%` }}></div>
+              <div className="barra-de-porcentagem" style={{ width: percentual + '%' }}></div>
               <span className="valor-porcentagem">{percentual}%</span>
             </div>
           );
         })}
       </div>
       <div className="total-votos">Total de votos: {totalVotos}</div>
-      <button className="reset-btn" onClick={resetarVotacao}>
-        Reiniciar Votação
-      </button>
-      <div className="aviso">
-      
-      </div>
     </div>
   );
 }
