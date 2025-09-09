@@ -1,13 +1,27 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 
 function App() {
-  const [enquete, setEnquete] = useState({
-    pergunta: "Quem merece ganhar a gincana?",
-    opcoes: ["Verde", "Amarela", "Vermelha", "Azul"],
-    votos: [1, 1, 1, 1],
-    opcaoSelecionada: -1
-  });
+  // Carregar dados iniciais do localStorage ou usar padrão
+  const carregarDadosIniciais = () => {
+    const dadosSalvos = localStorage.getItem('enqueteGincana');
+    if (dadosSalvos) {
+      return JSON.parse(dadosSalvos);
+    }
+    return {
+      pergunta: "Quem merece ganhar a gincana?",
+      opcoes: ["Verde", "Amarela", "Vermelha", "Azul"],
+      votos: [0, 0, 0, 0],
+      opcaoSelecionada: -1
+    };
+  };
+
+  const [enquete, setEnquete] = useState(carregarDadosIniciais());
+
+  // Salvar no localStorage sempre que houver mudanças
+  useEffect(() => {
+    localStorage.setItem('enqueteGincana', JSON.stringify(enquete));
+  }, [enquete]);
 
   const selecionarOpcao = (index) => {
     if (enquete.opcaoSelecionada === -1) {
@@ -22,6 +36,16 @@ function App() {
     }
   };
 
+  const resetarVotacao = () => {
+    if (window.confirm("Tem certeza que deseja reiniciar toda a votação?")) {
+      setEnquete({
+        ...enquete,
+        votos: [0, 0, 0, 0],
+        opcaoSelecionada: -1
+      });
+    }
+  };
+
   const totalVotos = enquete.votos.reduce((total, n) => total + n, 0);
 
   return (
@@ -29,20 +53,30 @@ function App() {
       <h1>{enquete.pergunta}</h1>
       <div className="opcoes">
         {enquete.opcoes.map((opcao, i) => {
-          const percentual = ((enquete.votos[i] / totalVotos) * 100).toFixed(1);
+          // Garantir que a porcentagem seja 0 quando não há votos
+          const percentual = totalVotos > 0 
+            ? ((enquete.votos[i] / totalVotos) * 100).toFixed(1) 
+            : 0;
 
           return (
             <div
               key={i}
-              className={`opcao ${enquete.opcaoSelecionada === i ? 'selecionada' : ''}`}
+              className={opcao ${enquete.opcaoSelecionada === i ? 'selecionada' : ''}}
               onClick={() => selecionarOpcao(i)}
             >
               <span>{opcao}</span>
-              <div className="barra-de-porcentagem" style={{ width: `${percentual}%` }}></div>
+              <div className="barra-de-porcentagem" style={{ width: ${percentual}% }}></div>
               <span className="valor-porcentagem">{percentual}%</span>
             </div>
           );
         })}
+      </div>
+      <div className="total-votos">Total de votos: {totalVotos}</div>
+      <button className="reset-btn" onClick={resetarVotacao}>
+        Reiniciar Votação
+      </button>
+      <div className="aviso">
+      
       </div>
     </div>
   );
