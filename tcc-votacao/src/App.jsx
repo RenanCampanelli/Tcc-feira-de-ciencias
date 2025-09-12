@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import './App.css'
 
 function App() {
-  // Carregar dados iniciais do localStorage ou usar padrão
+ 
   const carregarDadosIniciais = () => {
     const dadosSalvos = localStorage.getItem('enqueteGincana');
     if (dadosSalvos) {
@@ -12,28 +12,38 @@ function App() {
       pergunta: "Quem merece ganhar a gincana?",
       opcoes: ["Verde", "Amarela", "Vermelha", "Azul"],
       votos: [0, 0, 0, 0],
-      opcaoSelecionada: -1
     };
   };
 
   const [enquete, setEnquete] = useState(carregarDadosIniciais());
 
-  // Salvar no localStorage sempre que houver mudanças
+
   useEffect(() => {
     localStorage.setItem('enqueteGincana', JSON.stringify(enquete));
   }, [enquete]);
 
-  const selecionarOpcao = (index) => {
-    if (enquete.opcaoSelecionada === -1) {
-      const novosVotos = [...enquete.votos];
-      novosVotos[index] += 1;
+  const votar = (index) => {
+    const novosVotos = [...enquete.votos];
+    novosVotos[index] += 1;
 
-      setEnquete({
-        ...enquete,
-        votos: novosVotos,
-        opcaoSelecionada: index
-      });
+    setEnquete({
+      ...enquete,
+      votos: novosVotos
+    });
+  };
+
+  const removerVoto = (index) => {
+    if (enquete.votos[index] === 0) {
+      return;
     }
+
+    const votosCopia = [...enquete.votos];
+    votosCopia[index] -= 1;
+    
+    setEnquete({
+      ...enquete,
+      votos: votosCopia
+    });
   };
 
   const totalVotos = enquete.votos.reduce((total, n) => total + n, 0);
@@ -49,14 +59,27 @@ function App() {
             : 0;
 
           return (
-            <div
-              key={i}
-              className={'opcao ' + (enquete.opcaoSelecionada === i ? 'selecionada' : '')}
-              onClick={() => selecionarOpcao(i)}
-            >
-              <span>{opcao}</span>
-              <div className="barra-de-porcentagem" style={{ width: percentual + '%' }}></div>
-              <span className="valor-porcentagem">{percentual}%</span>
+            <div key={i} className="opcao-container">
+              <button 
+                className="botao-remover-opcao"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removerVoto(i);
+                }}
+                disabled={enquete.votos[i] === 0}
+                title={`Remover 1 voto de ${opcao}`}
+              >
+                ←
+              </button>
+              
+              <div
+                className="opcao"
+                onClick={() => votar(i)}
+              >
+                <span>{opcao}</span>
+                <div className="barra-de-porcentagem" style={{ width: percentual + '%' }}></div>
+                <span className="valor-porcentagem">{percentual}% ({enquete.votos[i]} votos)</span>
+              </div>
             </div>
           );
         })}
