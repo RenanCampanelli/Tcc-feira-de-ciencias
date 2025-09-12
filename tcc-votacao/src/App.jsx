@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import './App.css'
 
 function App() {
- 
+  // Carregar dados iniciais do localStorage ou usar padrão
   const carregarDadosIniciais = () => {
     const dadosSalvos = localStorage.getItem('enqueteGincana');
     if (dadosSalvos) {
@@ -17,7 +17,7 @@ function App() {
 
   const [enquete, setEnquete] = useState(carregarDadosIniciais());
 
-
+  // Salvar no localStorage sempre que houver mudanças
   useEffect(() => {
     localStorage.setItem('enqueteGincana', JSON.stringify(enquete));
   }, [enquete]);
@@ -48,12 +48,23 @@ function App() {
 
   const totalVotos = enquete.votos.reduce((total, n) => total + n, 0);
 
+  // Função para obter a cor baseada no índice da opção
+  const getCorEquipe = (index) => {
+    const cores = {
+      0: { primaria: '#4CAF50', hover: '#45a049', claro: 'rgba(76, 175, 80, 0.2)' }, // Verde
+      1: { primaria: '#FFEB3B', hover: '#FFD600', claro: 'rgba(255, 235, 59, 0.2)' }, // Amarela
+      2: { primaria: '#F44336', hover: '#D32F2F', claro: 'rgba(244, 67, 54, 0.2)' }, // Vermelha
+      3: { primaria: '#2196F3', hover: '#1976D2', claro: 'rgba(33, 150, 243, 0.2)' }  // Azul
+    };
+    return cores[index] || { primaria: '#ddd', hover: '#ccc', claro: 'rgba(0,0,0,0.1)' };
+  };
+
   return (
     <div className="enquete">
       <h1>{enquete.pergunta}</h1>
       <div className="opcoes">
         {enquete.opcoes.map((opcao, i) => {
-          // Garantir que a porcentagem seja 0 quando não há votos
+          const cor = getCorEquipe(i);
           const percentual = totalVotos > 0 
             ? ((enquete.votos[i] / totalVotos) * 100).toFixed(1) 
             : 0;
@@ -68,6 +79,10 @@ function App() {
                 }}
                 disabled={enquete.votos[i] === 0}
                 title={`Remover 1 voto de ${opcao}`}
+                style={{
+                  backgroundColor: cor.primaria,
+                  borderColor: cor.primaria
+                }}
               >
                 ←
               </button>
@@ -75,9 +90,20 @@ function App() {
               <div
                 className="opcao"
                 onClick={() => votar(i)}
+                style={{
+                  borderColor: cor.primaria,
+                  '--cor-hover': cor.hover,
+                  '--cor-claro': cor.claro
+                } as React.CSSProperties}
               >
                 <span>{opcao}</span>
-                <div className="barra-de-porcentagem" style={{ width: percentual + '%' }}></div>
+                <div 
+                  className="barra-de-porcentagem" 
+                  style={{ 
+                    width: percentual + '%',
+                    backgroundColor: cor.claro
+                  }}
+                ></div>
                 <span className="valor-porcentagem">{percentual}% ({enquete.votos[i]} votos)</span>
               </div>
             </div>
